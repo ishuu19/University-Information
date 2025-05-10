@@ -96,18 +96,3 @@ A comprehensive web-based platform designed to streamline the university applica
 - Integration with external education APIs
 - Automated document verification system
 
-## 🚀 Getting Started
-
-[Add installation and setup instructions here]
-
-## 📝 License
-
-[Add your chosen license here]
-
-## �� Contributing
-
-[Add contribution guidelines here]
-
-## 📞 Support
-
-[Add support information here]
