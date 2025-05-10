@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Program Search - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Search Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form method="GET" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label for="q" class="block text-sm font-medium text-gray-700">Search</label>
+                        <input type="text" name="q" id="q" value="{{ query }}"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Program name, field, or university">
+                    </div>
+                    <div>
+                        <label for="field" class="block text-sm font-medium text-gray-700">Field of Study</label>
+                        <select name="field" id="field"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">All Fields</option>
+                            {% for field_name in fields %}
+                                <option value="{{ field_name }}" {% if field == field_name %}selected{% endif %}>
+                                    {{ field_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="degree" class="block text-sm font-medium text-gray-700">Degree Level</label>
+                        <select name="degree" id="degree"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">All Degrees</option>
+                            {% for degree_name in degrees %}
+                                <option value="{{ degree_name }}" {% if degree == degree_name %}selected{% endif %}>
+                                    {{ degree_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="min_tuition" class="block text-sm font-medium text-gray-700">Min Tuition</label>
+                        <input type="number" name="min_tuition" id="min_tuition" value="{{ min_tuition }}"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Minimum tuition fee">
+                    </div>
+                    <div>
+                        <label for="max_tuition" class="block text-sm font-medium text-gray-700">Max Tuition</label>
+                        <input type="number" name="max_tuition" id="max_tuition" value="{{ max_tuition }}"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Maximum tuition fee">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Search Programs
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search Results -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-900">Search Results</h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Found {{ programs.count }} program{{ programs.count|pluralize }}
+                </p>
+            </div>
+
+            {% if programs %}
+                <div class="divide-y divide-gray-200">
+                    {% for program in programs %}
+                        <div class="p-6 hover:bg-gray-50">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">{{ program.name }}</h3>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ program.degree.name }} in {{ program.field.name }}
+                                    </p>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ program.university.name }} • {{ program.university.location }}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-medium text-gray-900">${{ program.tuition_fee }}</p>
+                                    <p class="text-sm text-gray-500">per year</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between">
+                                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span>Duration: {{ program.duration }} years</span>
+                                    <span>World Rank: #{{ program.university.world_university_ranking }}</span>
+                                </div>
+                                <a href="{% url 'program_detail' program.id %}"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    View Details →
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-6 text-center">
+                    <p class="text-gray-500">No programs found matching your criteria.</p>
+                    <a href="{% url 'program_search' %}" class="mt-4 inline-block text-blue-600 hover:text-blue-500">
+                        Clear Filters
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

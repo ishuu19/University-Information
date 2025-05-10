@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ university.name }} - University Portal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'university_list' %}">Universities</a></li>
+                <li class="breadcrumb-item active">{{ university.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">{{ university.name }}</h1>
+        {% if university.image_url %}
+        <img src="{{ university.image_url }}" class="img-fluid rounded mb-4" alt="{{ university.name }}">
+        {% endif %}
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">About</h5>
+                {% if description and description.short_description %}
+                <p class="card-text">{{ description.short_description }}</p>
+                {% endif %}
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt"></i> {{ university.location }}
+                        {% if university.world_university_ranking %}
+                        <br><i class="fas fa-trophy"></i> World Ranking: #{{ university.world_university_ranking }}
+                        {% endif %}
+                        {% if university.type %}
+                        <br><i class="fas fa-university"></i> Type: {{ university.type.type_name }}
+                        {% endif %}
+                        {% if university.founded_year %}
+                        <br><i class="fas fa-calendar"></i> Founded: {{ university.founded_year }}
+                        {% endif %}
+                    </small>
+                </p>
+            </div>
+        </div>
+
+        {% if stats %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Statistics</h5>
+                <div class="row">
+                    {% if stats.avg_rating %}
+                    <div class="col-md-6 mb-3">
+                        <h6>Average Rating</h6>
+                        <p>{{ stats.avg_rating }}/5.0</p>
+                    </div>
+                    {% endif %}
+                    {% if stats.acceptance_rate %}
+                    <div class="col-md-6 mb-3">
+                        <h6>Acceptance Rate</h6>
+                        <p>{{ stats.acceptance_rate }}%</p>
+                    </div>
+                    {% endif %}
+                    {% if stats.total_students %}
+                    <div class="col-md-6 mb-3">
+                        <h6>Total Students</h6>
+                        <p>{{ stats.total_students }}</p>
+                    </div>
+                    {% endif %}
+                    {% if stats.student_faculty_ratio %}
+                    <div class="col-md-6 mb-3">
+                        <h6>Student-Faculty Ratio</h6>
+                        <p>{{ stats.student_faculty_ratio }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if description %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Campus Life</h5>
+                {% if description.housing_description %}
+                <h6>Housing</h6>
+                <p>{{ description.housing_description }}</p>
+                {% endif %}
+                {% if description.dining_description %}
+                <h6>Dining</h6>
+                <p>{{ description.dining_description }}</p>
+                {% endif %}
+                {% if description.student_org_description %}
+                <h6>Student Organizations</h6>
+                <p>{{ description.student_org_description }}</p>
+                {% endif %}
+                {% if description.athletics_description %}
+                <h6>Athletics</h6>
+                <p>{{ description.athletics_description }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Programs</h5>
+                {% if programs %}
+                <div class="list-group">
+                    {% for program in programs %}
+                    <a href="{% url 'program_detail' program.id %}" class="list-group-item list-group-item-action">
+                        <h6 class="mb-1">{{ program.name }}</h6>
+                        <small class="text-muted">
+                            {% if program.degree %}{{ program.degree.name }}{% endif %}
+                            {% if program.field %} in {{ program.field.name }}{% endif %}
+                        </small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No programs available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if stats %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Costs</h5>
+                {% if stats.avg_tuition %}
+                <p><strong>Average Tuition:</strong> ${{ stats.avg_tuition }}</p>
+                {% endif %}
+                {% if stats.estimated_cost_of_living %}
+                <p><strong>Estimated Cost of Living:</strong> ${{ stats.estimated_cost_of_living }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

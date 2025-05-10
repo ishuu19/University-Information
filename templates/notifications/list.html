@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold text-gray-900">Notifications</h1>
+                    {% if unread_count > 0 %}
+                        <form method="POST" action="{% url 'mark_all_notifications_read' %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200">
+                                Mark all as read
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if notifications %}
+                <div class="divide-y divide-gray-200">
+                    {% for notification in notifications %}
+                        <div class="p-6 hover:bg-gray-50 {% if not notification.is_read %}bg-blue-50{% endif %}">
+                            <form method="POST" action="{% url 'notifications' %}" class="flex items-start justify-between">
+                                {% csrf_token %}
+                                <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                                <div class="flex-1">
+                                    <div class="flex items-center">
+                                        {% if not notification.is_read %}
+                                            <span class="h-2 w-2 bg-blue-500 rounded-full mr-2"></span>
+                                        {% endif %}
+                                        <p class="text-sm text-gray-900">{{ notification.message }}</p>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ notification.created_at|timesince }} ago
+                                    </p>
+                                </div>
+                                <button type="submit"
+                                    class="ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200">
+                                    View
+                                </button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-6 text-center">
+                    <p class="text-gray-500">No notifications yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GlobeAlly - Your Gateway to Global Education{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownButton = document.getElementById('profileButton');
+            const dropdown = document.getElementById('profileDropdown');
+            
+            if (dropdownButton && dropdown) {
+                dropdownButton.addEventListener('click', function(event) {
+                    dropdown.classList.toggle('hidden');
+                    event.stopPropagation();
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!dropdown.contains(event.target) && !dropdownButton.contains(event.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-4 max-w-sm w-full border border-gray-200">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i id="toastIcon" class="fas fa-check-circle text-green-500 text-xl"></i>
+                </div>
+                <div class="ml-3 w-0 flex-1">
+                    <p id="toastMessage" class="text-sm font-medium text-gray-900"></p>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button onclick="hideToast()" class="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="/" class="flex items-center">
+                        <span class="text-2xl font-bold text-blue-600">GlobeAlly</span>
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center">
+                    <div class="ml-10 flex items-center space-x-4">
+                        <a href="{% url 'home' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Home</a>
+                        <a href="{% url 'university_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Universities</a>
+                        <a href="{% url 'program_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Programs</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'application_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Applications</a>
+                            <div class="relative ml-3">
+                                <button id="profileButton" class="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">
+                                    {{ user.username }}
+                                    <svg class="ml-1 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                    <a href="/profile/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                                    <a href="/logout/" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a href="/login/" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Login</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div class="md:hidden">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="{% url 'home' %}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700">Home</a>
+            <a href="{% url 'university_list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700">Universities</a>
+            <a href="{% url 'program_list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700">Programs</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'application_list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700">Applications</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">About GlobeAlly</h3>
+                    <p class="text-gray-400">Your trusted partner in finding the perfect educational opportunities worldwide.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="{% url 'university_list' %}" class="hover:text-white">Universities</a></li>
+                        <li><a href="{% url 'program_list' %}" class="hover:text-white">Programs</a></li>
+                        <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Resources</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Application Guide</a></li>
+                        <li><a href="#" class="hover:text-white">Scholarship Info</a></li>
+                        <li><a href="#" class="hover:text-white">Student Visa</a></li>
+                        <li><a href="#" class="hover:text-white">FAQs</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
+                    <div class="flex space-x-4 text-gray-400">
+                        <a href="#" class="hover:text-white"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="hover:text-white"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
+                <p>&copy; {% now "Y" %} GlobeAlly. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            // Set message
+            toastMessage.textContent = message;
+            
+            // Set icon based on type
+            if (type === 'success') {
+                toastIcon.className = 'fas fa-check-circle text-green-500 text-xl';
+            } else if (type === 'error') {
+                toastIcon.className = 'fas fa-exclamation-circle text-red-500 text-xl';
+            } else if (type === 'info') {
+                toastIcon.className = 'fas fa-info-circle text-blue-500 text-xl';
+            }
+            
+            // Show toast
+            toast.classList.remove('hidden');
+            
+            // Hide after 3 seconds
+            setTimeout(hideToast, 3000);
+        }
+        
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('hidden');
+        }
+    </script>
+</body>
+</html> 

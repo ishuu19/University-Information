@@ -1,0 +1,1366 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - {{ profile.first_name }} {{ profile.last_name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<style>
+    .form-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .form-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .form-close:hover {
+        color: #333;
+    }
+
+    .form-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .form-header h3 {
+        margin: 0;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        transition: border-color 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+    }
+
+    .loading {
+        position: relative;
+        pointer-events: none;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: -0.75rem 0 0 -0.75rem;
+        border: 2px solid #fff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .document-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: transform 0.2s ease;
+    }
+
+    .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .document-icon {
+        font-size: 2rem;
+        color: #4a90e2;
+        text-align: center;
+    }
+
+    .document-info {
+        flex-grow: 1;
+    }
+
+    .document-info h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+
+    .document-info p {
+        margin: 0.25rem 0;
+        color: #666;
+    }
+
+    .document-info .text-muted {
+        font-size: 0.85rem;
+        color: #888;
+    }
+
+    .document-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .document-actions .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .document-actions .btn i {
+        margin-right: 0.25rem;
+    }
+
+    /* Loading indicator for document operations */
+    .document-loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .document-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: -0.75rem 0 0 -0.75rem;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .profile-image-wrapper {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .profile-image-wrapper:hover .profile-image {
+        transform: scale(1.05);
+    }
+
+    .edit-photo-btn {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .profile-image-wrapper:hover .edit-photo-btn {
+        opacity: 1;
+    }
+
+    .edit-photo-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .edit-photo-btn i {
+        font-size: 1.2rem;
+    }
+
+    .saved-items-container {
+        margin-top: 2rem;
+    }
+
+    .subsection-title {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .saved-items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .saved-item-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .saved-item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .saved-item-image {
+        height: 160px;
+        overflow: hidden;
+        position: relative;
+        background: #f8f9fa;
+    }
+
+    .saved-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .placeholder-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9ecef;
+        color: #6c757d;
+    }
+
+    .placeholder-image i {
+        font-size: 3rem;
+    }
+
+    .saved-item-content {
+        padding: 1.25rem;
+    }
+
+    .saved-item-title {
+        font-size: 1.1rem;
+        margin: 0 0 0.5rem 0;
+        color: #2c3e50;
+    }
+
+    .saved-item-details,
+    .saved-item-ranking,
+    .saved-item-university,
+    .saved-item-date,
+    .saved-item-notes {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin: 0.25rem 0;
+    }
+
+    .saved-item-notes {
+        margin-top: 0.75rem;
+        font-style: italic;
+    }
+
+    .saved-item-actions {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.35em 0.65em;
+    }
+
+    /* Enhanced Saved Items Styling */
+    .saved-items-section {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .saved-items-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .saved-items-header h3 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .saved-items-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+
+    .subsection-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        color: #2c3e50;
+    }
+
+    .subsection-title i {
+        font-size: 1.4rem;
+        margin-right: 0.75rem;
+        color: #4a90e2;
+    }
+
+    .saved-items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .saved-item-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #edf2f7;
+    }
+
+    .saved-item-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .saved-item-image {
+        height: 180px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .saved-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .saved-item-card:hover .saved-item-image img {
+        transform: scale(1.05);
+    }
+
+    .placeholder-image {
+        background: linear-gradient(135deg, #f6f8fa 0%, #e9ecef 100%);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .placeholder-image i {
+        font-size: 3.5rem;
+        color: #4a90e2;
+        opacity: 0.7;
+    }
+
+    .saved-item-content {
+        padding: 1.5rem;
+    }
+
+    .saved-item-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 1rem 0;
+        line-height: 1.4;
+    }
+
+    .saved-item-details,
+    .saved-item-ranking,
+    .saved-item-university,
+    .saved-item-date {
+        display: flex;
+        align-items: center;
+        margin: 0.5rem 0;
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .saved-item-details i,
+    .saved-item-ranking i,
+    .saved-item-university i,
+    .saved-item-date i {
+        width: 20px;
+        color: #4a90e2;
+        margin-right: 0.5rem;
+    }
+
+    .saved-item-notes {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #edf2f7;
+        font-style: italic;
+        color: #718096;
+        font-size: 0.9rem;
+    }
+
+    .saved-item-actions {
+        padding: 1rem 1.5rem;
+        background: #f8fafc;
+        border-top: 1px solid #edf2f7;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .saved-item-actions .btn {
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge {
+        background: #4a90e2;
+        color: white;
+        font-weight: 500;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-left: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .saved-items-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .saved-items-section {
+            padding: 1rem;
+        }
+
+        .saved-items-container {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alerts-container"></div>
+    <div class="profile-wrapper">
+        <!-- Sidebar -->
+        <aside class="profile-sidebar">
+            <div class="profile-card">
+                <div class="profile-image-wrapper">
+                    {% if profile.image_url %}
+                        <img src="{{ profile.image_url }}" alt="Profile Photo" class="profile-image">
+                    {% else %}
+                        <img src="{% static 'images/default-profile.png' %}" alt="Default Profile" class="profile-image">
+                    {% endif %}
+                    <button class="edit-photo-btn" onclick="showForm('editPhotoForm')">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <div class="profile-info">
+                    <h2>{{ profile.first_name }} {{ profile.last_name }}</h2>
+                    <p class="email">{{ profile.email }}</p>
+                    <button class="btn btn-primary btn-sm" onclick="showForm('editProfileForm')">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </button>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ academic_history|length }}</span>
+                        <span class="stat-label">Academic Records</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ documents|length }}</span>
+                        <span class="stat-label">Documents</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ applications|length }}</span>
+                        <span class="stat-label">Applications</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-card">
+                <h3>Contact Information</h3>
+                <ul class="contact-list">
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span>{{ profile.phone|default:"Not provided" }}</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ profile.address|default:"Not provided" }}</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-info-circle"></i>
+                        <span>{{ profile.bio|default:"No bio provided" }}</span>
+                    </li>
+                </ul>
+        </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="profile-content">
+            <!-- Academic History Section -->
+            <section class="content-section">
+                <div class="section-header">
+                    <h3>Academic History</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showForm('addAcademicForm')">
+                        <i class="fas fa-plus me-2"></i>Add Record
+                    </button>
+                </div>
+                {% if academic_history %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>School</th>
+                                    <th>Level</th>
+                                    <th>Field</th>
+                                    <th>Years</th>
+                                    <th>Result</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in academic_history %}
+                                <tr>
+                                    <td>{{ record.school_name }}</td>
+                                    <td>{{ record.level_completed }}</td>
+                                    <td>{{ record.field_of_study }}</td>
+                                    <td>{{ record.start_year }} - {{ record.completion_year }}</td>
+                                    <td>{{ record.result_value }} ({{ record.result_type }})</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-2 edit-academic-record" data-id="{{ record.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-academic-record" data-id="{{ record.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No academic records found.</p>
+                {% endif %}
+            </section>
+
+            <!-- Documents Section -->
+            <section class="content-section">
+                <div class="section-header">
+                    <h3>Documents</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showForm('uploadDocumentForm')">
+                        <i class="fas fa-upload me-2"></i>Upload Document
+                    </button>
+                </div>
+                {% if documents %}
+                    <div class="documents-grid">
+                        {% for doc in documents %}
+                        <div class="document-card" data-document-id="{{ doc.id }}">
+                            <div class="document-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="document-info">
+                                <h4>{{ doc.document_type }}</h4>
+                                <p>{{ doc.upload_date|date:"M d, Y" }}</p>
+                                <p class="text-muted small">{{ doc.original_filename }}</p>
+                            </div>
+                            <div class="document-actions">
+                                <a href="{% get_media_prefix %}{{ doc.file_path }}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger delete-document" data-id="{{ doc.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No documents uploaded yet.</p>
+                {% endif %}
+            </section>
+
+            <!-- Saved Items Section -->
+            <section class="content-section saved-items-section">
+                <div class="saved-items-header">
+                    <h3>
+                        <i class="fas fa-bookmark me-2"></i>
+                        Saved Universities and Programs
+                    </h3>
+                </div>
+                
+                <!-- Saved Universities -->
+                <div class="saved-items-container">
+                    <h4 class="subsection-title">
+                        <i class="fas fa-university"></i>
+                        Saved Universities
+                        <span class="badge">{{ saved_universities|length }}</span>
+                    </h4>
+                    
+                    {% if saved_universities %}
+                        <div class="saved-items-grid">
+                            {% for uni in saved_universities %}
+                            <div class="saved-item-card" data-id="{{ uni.saved_item_id }}">
+                                <div class="saved-item-image">
+                                    {% if uni.image_url %}
+                                        <img src="{{ uni.image_url }}" alt="{{ uni.university_name }}" class="university-image">
+                                        {% else %}
+                                        <div class="placeholder-image">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                <div class="saved-item-content">
+                                    <h5 class="saved-item-title">{{ uni.university_name }}</h5>
+                                    <p class="saved-item-details">
+                                        <i class="fas fa-globe-americas"></i>
+                                        {{ uni.country }}
+                                    </p>
+                                    {% if uni.world_university_ranking %}
+                                    <p class="saved-item-ranking">
+                                        <i class="fas fa-chart-line"></i>
+                                        World Rank: #{{ uni.world_university_ranking }}
+                                    </p>
+                                    {% endif %}
+                                    <p class="saved-item-date">
+                                        <i class="fas fa-clock"></i>
+                                        Saved {{ uni.saved_date|date:"M d, Y" }}
+                                    </p>
+                                    {% if uni.notes %}
+                                    <p class="saved-item-notes">
+                                        <i class="fas fa-sticky-note me-2"></i>
+                                        {{ uni.notes }}
+                                    </p>
+                                    {% endif %}
+                                    </div>
+                                <div class="saved-item-actions">
+                                    <a href="{% url 'university_detail' uni.university_id %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                        View Details
+                                    </a>
+                                    <button class="btn btn-outline-danger remove-saved-item" 
+                                            onclick="removeSavedItem('{{ uni.saved_item_id }}', 'university')"
+                                            data-id="{{ uni.saved_item_id }}" 
+                                            data-type="university">
+                                        <i class="fas fa-trash-alt"></i>
+                                        Remove
+                                    </button>
+                                </div>
+                                    </div>
+                            {% endfor %}
+                                    </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-university fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No saved universities yet.</p>
+                            <a href="{% url 'university_list' %}" class="btn btn-primary mt-2">
+                                <i class="fas fa-search me-2"></i>Browse Universities
+                            </a>
+                                    </div>
+                    {% endif %}
+                                    </div>
+
+                <!-- Saved Programs -->
+                <div class="saved-items-container">
+                    <h4 class="subsection-title">
+                        <i class="fas fa-graduation-cap"></i>
+                        Saved Programs
+                        <span class="badge">{{ saved_programs|length }}</span>
+                    </h4>
+                    
+                    {% if saved_programs %}
+                        <div class="saved-items-grid">
+                            {% for prog in saved_programs %}
+                            <div class="saved-item-card" data-id="{{ prog.saved_item_id }}">
+                                <div class="saved-item-image">
+                                    {% if prog.image_url %}
+                                        <img src="{{ prog.image_url }}" alt="{{ prog.program_name }}" class="w-full h-48 object-cover rounded-t-lg">
+                                    {% else %}
+                                        <div class="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
+                                            <i class="fas fa-graduation-cap text-4xl text-gray-400"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="p-4">
+                                    <h5 class="saved-item-title text-lg font-semibold mb-2">{{ prog.program_name }}</h5>
+                                    <p class="saved-item-university text-gray-600 mb-2">
+                                        <i class="fas fa-university mr-2"></i>
+                                        {{ prog.university_name }}
+                                    </p>
+                                    <p class="saved-item-date text-sm text-gray-500 mb-4">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        Saved {{ prog.saved_date|date:"M d, Y" }}
+                                    </p>
+                                    <div class="saved-item-actions flex space-x-2">
+                                        <a href="{% url 'program_detail' prog.program_id %}" class="btn btn-outline-primary flex-1">
+                                            <i class="fas fa-eye mr-2"></i>
+                                            View Details
+                                        </a>
+                                        <button class="btn btn-outline-danger remove-saved-item" data-id="{{ prog.saved_item_id }}" data-type="program">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No saved programs yet.</p>
+                            <a href="{% url 'program_list' %}" class="btn btn-primary mt-2">
+                                <i class="fas fa-search me-2"></i>Browse Programs
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
+                    </div>
+                </div>
+
+<!-- Form Overlays -->
+<div id="editProfileForm" class="form-overlay">
+    <div class="form-container">
+        <button class="form-close" onclick="hideForm('editProfileForm')">&times;</button>
+        <div class="form-header">
+            <h3>Edit Profile</h3>
+        </div>
+        <form method="POST" action="{% url 'edit_profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-control" name="first_name" value="{{ profile.first_name }}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-control" name="last_name" value="{{ profile.last_name }}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" value="{{ profile.email }}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" class="form-control" name="phone" value="{{ profile.phone }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea class="form-control" name="address" rows="2">{{ profile.address }}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bio</label>
+                <textarea class="form-control" name="bio" rows="3">{{ profile.bio }}</textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="hideForm('editProfileForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+                </div>
+
+<div id="addAcademicForm" class="form-overlay">
+    <div class="form-container">
+        <button class="form-close" onclick="hideForm('addAcademicForm')">&times;</button>
+        <div class="form-header">
+            <h3>Add Academic Record</h3>
+        </div>
+        <form method="POST" action="{% url 'add_academic_record' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">School Name</label>
+                <input type="text" class="form-control" name="school_name" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Level Completed</label>
+                <select class="form-control" name="level_completed" required>
+                    <option value="">Select Level</option>
+                    <option value="High School">High School</option>
+                    <option value="Bachelor's">Bachelor's</option>
+                    <option value="Master's">Master's</option>
+                    <option value="PhD">PhD</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Field of Study</label>
+                <input type="text" class="form-control" name="field_of_study" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Start Year</label>
+                <input type="number" class="form-control" name="start_year" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Completion Year</label>
+                <input type="number" class="form-control" name="completion_year" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Result Type</label>
+                <select class="form-control" name="result_type" required>
+                    <option value="">Select Type</option>
+                    <option value="GPA">GPA</option>
+                    <option value="Percentage">Percentage</option>
+                    <option value="Grade">Grade</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Result Value</label>
+                <input type="text" class="form-control" name="result_value" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Additional Information</label>
+                <textarea class="form-control" name="additional_info" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="hideForm('addAcademicForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Record</button>
+            </div>
+        </form>
+    </div>
+                </div>
+
+<div id="uploadDocumentForm" class="form-overlay">
+    <div class="form-container">
+        <button class="form-close" onclick="hideForm('uploadDocumentForm')">&times;</button>
+        <div class="form-header">
+            <h3>Upload Document</h3>
+        </div>
+        <form method="POST" action="{% url 'upload_documents' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Document Type</label>
+                <select class="form-control" name="document_type" required>
+                    <option value="">Select Document Type</option>
+                    <option value="diploma">Diploma</option>
+                    <option value="transcript">Transcript</option>
+                    <option value="resume">Resume</option>
+                    <option value="passport">Passport</option>
+                    <option value="standardized_test">Standardized Test</option>
+                    <option value="language_test">Language Test</option>
+                    <option value="recommendation">Recommendation Letter</option>
+                    <option value="eca">Extra-Curricular Activities (ECA)</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">File</label>
+                <input type="file" class="form-control" name="document" accept=".pdf,.doc,.docx" required>
+                </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="hideForm('uploadDocumentForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editPhotoForm" class="form-overlay">
+    <div class="form-container">
+        <button class="form-close" onclick="hideForm('editPhotoForm')">&times;</button>
+        <div class="form-header">
+            <h3>Change Profile Photo</h3>
+        </div>
+        <form method="POST" action="{% url 'edit_profile' %}" enctype="multipart/form-data" id="photoUploadForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Select New Photo</label>
+                <input type="file" class="form-control" name="photo" accept="image/*" required>
+                <small class="text-muted">Supported formats: JPG, PNG, GIF. Max size: 5MB</small>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="hideForm('editPhotoForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Upload Photo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form visibility functions
+function showForm(formId) {
+    document.getElementById(formId).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function hideForm(formId) {
+    document.getElementById(formId).style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Close form when clicking outside
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('form-overlay')) {
+        hideForm(e.target.id);
+    }
+});
+
+// Handle form submissions
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle profile form submission
+    const profileForm = document.querySelector('#editProfileForm form');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error updating profile');
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('loading');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating profile');
+                submitButton.disabled = false;
+                submitButton.classList.remove('loading');
+            });
+        });
+    }
+
+    // Handle academic record form submission
+    const academicForm = document.querySelector('#addAcademicForm form');
+    if (academicForm) {
+        academicForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error adding academic record');
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('loading');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error adding academic record');
+                submitButton.disabled = false;
+                submitButton.classList.remove('loading');
+            });
+        });
+    }
+
+    // Handle document upload
+    const documentForm = document.querySelector('#uploadDocumentForm form');
+    if (documentForm) {
+        documentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error uploading document');
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('loading');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error uploading document');
+                submitButton.disabled = false;
+                submitButton.classList.remove('loading');
+            });
+        });
+    }
+
+    // Handle photo upload form submission
+    const photoForm = document.querySelector('#photoUploadForm');
+    if (photoForm) {
+        photoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    showAlert('error', data.message || 'Error uploading photo');
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('loading');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Error uploading photo');
+                submitButton.disabled = false;
+                submitButton.classList.remove('loading');
+            });
+        });
+    }
+
+    // Handle academic record editing
+    document.querySelectorAll('.edit-academic-record').forEach(button => {
+        button.addEventListener('click', function() {
+            editAcademicRecord(this.dataset.id);
+        });
+    });
+
+    // Handle academic record deletion
+    document.querySelectorAll('.delete-academic-record').forEach(button => {
+        button.addEventListener('click', function() {
+            deleteAcademicRecord(this.dataset.id);
+        });
+    });
+
+    // Handle document deletion
+    document.querySelectorAll('.delete-document').forEach(button => {
+        button.addEventListener('click', function() {
+            deleteDocument(this.dataset.id);
+        });
+    });
+
+    // Handle saved item removal
+    document.querySelectorAll('.remove-saved-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+            removeSavedItem(id, type);
+        });
+    });
+});
+
+// Function to handle academic record deletion
+function deleteAcademicRecord(id) {
+    if (confirm('Are you sure you want to delete this academic record?')) {
+        fetch(`/profile/delete-academic-record/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error deleting record');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting record');
+        });
+    }
+}
+
+// Function to handle document deletion
+function deleteDocument(documentId) {
+    if (!confirm('Are you sure you want to delete this document?')) {
+        return;
+    }
+
+    const documentCard = document.querySelector(`[data-document-id="${documentId}"]`);
+    documentCard.classList.add('document-loading');
+
+    fetch(`/profile/documents/${documentId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            documentCard.remove();
+            showAlert('success', 'Document deleted successfully');
+        } else {
+            showAlert('error', data.message || 'Error deleting document');
+            documentCard.classList.remove('document-loading');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('error', 'An error occurred while deleting the document');
+        documentCard.classList.remove('document-loading');
+    });
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.querySelector('.alerts-container').appendChild(alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Function to handle academic record editing
+function editAcademicRecord(id) {
+    fetch(`/academic/get/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const form = document.querySelector('#addAcademicForm form');
+                form.action = `/academic/edit/${id}/`;
+                form.querySelector('[name="school_name"]').value = data.data.school_name;
+                form.querySelector('[name="level_completed"]').value = data.data.level_completed;
+                form.querySelector('[name="field_of_study"]').value = data.data.field_of_study;
+                form.querySelector('[name="start_year"]').value = data.data.start_year;
+                form.querySelector('[name="completion_year"]').value = data.data.completion_year;
+                form.querySelector('[name="result_type"]').value = data.data.result_type;
+                form.querySelector('[name="result_value"]').value = data.data.result_value;
+                form.querySelector('[name="additional_info"]').value = data.data.additional_info;
+                
+                document.querySelector('#addAcademicForm .form-header h3').textContent = 'Edit Academic Record';
+                document.querySelector('#addAcademicForm button[type="submit"]').textContent = 'Save Changes';
+                
+                showForm('addAcademicForm');
+            } else {
+                alert(data.message || 'Error loading record');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading record');
+        });
+    }
+
+// Update the profile image display
+function updateProfileImage(imageUrl) {
+    const profileImage = document.querySelector('.profile-image');
+    if (profileImage) {
+        profileImage.src = imageUrl;
+    }
+}
+
+function removeSavedItem(itemId, itemType) {
+    if (!confirm(`Are you sure you want to remove this saved ${itemType}?`)) {
+        return;
+    }
+
+    const card = document.querySelector(`.saved-item-card[data-id="${itemId}"]`);
+    if (card) {
+        card.style.opacity = '0.5';
+    }
+
+    fetch(`/saved-items/${itemId}/remove/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (card) {
+                card.remove();
+                // Update the badge count
+                const badge = document.querySelector(`.subsection-title .badge`);
+                if (badge) {
+                    const currentCount = parseInt(badge.textContent);
+                    badge.textContent = currentCount - 1;
+                }
+                showAlert('success', `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} removed successfully`);
+    }
+        } else {
+            if (card) {
+                card.style.opacity = '1';
+            }
+            showAlert('error', data.message || 'Error removing item');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (card) {
+            card.style.opacity = '1';
+        }
+        showAlert('error', 'Error removing item');
+    });
+}
+</script>
+{% endblock %} 

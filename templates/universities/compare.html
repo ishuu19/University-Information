@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Universities - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-900">Compare Universities</h1>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Feature
+                            </th>
+                            {% for university in universities %}
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ university.name }}
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Location -->
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Location
+                            </td>
+                            {% for university in universities %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ university.location }}
+                                </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- World Ranking -->
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                World Ranking
+                            </td>
+                            {% for university in universities %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    #{{ university.world_university_ranking }}
+                                </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- Type -->
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Type
+                            </td>
+                            {% for university in universities %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ university.type.name }}
+                                </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- Stats -->
+                        {% for university in universities %}
+                            {% with stats=university.universitystats_set.first %}
+                                {% if stats %}
+                                    <!-- Total Students -->
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            Total Students
+                                        </td>
+                                        {% for uni in universities %}
+                                            {% with uni_stats=uni.universitystats_set.first %}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ uni_stats.total_students|default:"N/A" }}
+                                                </td>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </tr>
+
+                                    <!-- International Students -->
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            International Students
+                                        </td>
+                                        {% for uni in universities %}
+                                            {% with uni_stats=uni.universitystats_set.first %}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ uni_stats.international_students|default:"N/A" }}%
+                                                </td>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </tr>
+
+                                    <!-- Student-Faculty Ratio -->
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            Student-Faculty Ratio
+                                        </td>
+                                        {% for uni in universities %}
+                                            {% with uni_stats=uni.universitystats_set.first %}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ uni_stats.student_faculty_ratio|default:"N/A" }}
+                                                </td>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </tr>
+
+                                    <!-- Acceptance Rate -->
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            Acceptance Rate
+                                        </td>
+                                        {% for uni in universities %}
+                                            {% with uni_stats=uni.universitystats_set.first %}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ uni_stats.acceptance_rate|default:"N/A" }}%
+                                                </td>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+
+                        <!-- Programs -->
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Number of Programs
+                            </td>
+                            {% for university in universities %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ university.program_set.count }}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-6 border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'university_list' %}" class="text-blue-600 hover:text-blue-500">
+                        ← Back to Universities
+                    </a>
+                    <a href="{% url 'compare_universities' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        Compare Different Universities
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

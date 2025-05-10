@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Application Status - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Submitted</h3>
+                        <p class="text-2xl font-semibold text-gray-900">{{ status_counts.Submitted }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Under Review</h3>
+                        <p class="text-2xl font-semibold text-gray-900">{{ status_counts.Under_Review }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Accepted</h3>
+                        <p class="text-2xl font-semibold text-gray-900">{{ status_counts.Accepted }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Rejected</h3>
+                        <p class="text-2xl font-semibold text-gray-900">{{ status_counts.Rejected }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applications List -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-900">Your Applications</h2>
+            </div>
+
+            {% if applications %}
+                <div class="divide-y divide-gray-200">
+                    {% for application in applications %}
+                        <div class="p-6 hover:bg-gray-50">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">{{ application.program.name }}</h3>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ application.university.name }} • {{ application.university.location }}
+                                    </p>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Start Term: {{ application.start_term }}
+                                    </p>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="px-3 py-1 text-sm font-medium rounded-full
+                                        {% if application.status == 'Submitted' %}
+                                            bg-blue-100 text-blue-800
+                                        {% elif application.status == 'Under Review' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% elif application.status == 'Accepted' %}
+                                            bg-green-100 text-green-800
+                                        {% else %}
+                                            bg-red-100 text-red-800
+                                        {% endif %}">
+                                        {{ application.status }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between">
+                                <div class="text-sm text-gray-500">
+                                    Submitted on {{ application.submitted_date|date:"F j, Y" }}
+                                </div>
+                                <a href="{% url 'application_detail' application.id %}"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200">
+                                    View Details →
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-6 text-center">
+                    <p class="text-gray-500">You haven't submitted any applications yet.</p>
+                    <a href="{% url 'university_list' %}" class="mt-4 inline-block text-blue-600 hover:text-blue-500">
+                        Browse Universities →
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

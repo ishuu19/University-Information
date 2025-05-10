@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Documents - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-900">Upload Documents</h1>
+                <p class="mt-2 text-sm text-gray-500">Please upload all required documents for your university applications.</p>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+                {% csrf_token %}
+
+                <!-- Required Documents -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="diploma" class="block text-sm font-medium text-gray-700">Diploma</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="diploma" id="diploma" accept=".pdf,.doc,.docx"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.diploma %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.diploma.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="academic_transcripts" class="block text-sm font-medium text-gray-700">Academic Transcripts</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="academic_transcripts" id="academic_transcripts" accept=".pdf,.doc,.docx"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.academic_transcripts %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.academic_transcripts.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="resume" class="block text-sm font-medium text-gray-700">Resume</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="resume" id="resume" accept=".pdf,.doc,.docx"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.resume %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.resume.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="passport" class="block text-sm font-medium text-gray-700">Passport</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="passport" id="passport" accept=".pdf,.jpg,.jpeg,.png"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.passport %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.passport.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="standardized_test_results" class="block text-sm font-medium text-gray-700">Standardized Test Results</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="standardized_test_results" id="standardized_test_results" accept=".pdf,.jpg,.jpeg,.png"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.standardized_test_results %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.standardized_test_results.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="language_test_results" class="block text-sm font-medium text-gray-700">Language Test Results</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="language_test_results" id="language_test_results" accept=".pdf,.jpg,.jpeg,.png"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.language_test_results %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.language_test_results.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="letter_of_recommendation" class="block text-sm font-medium text-gray-700">Letter of Recommendation</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="letter_of_recommendation" id="letter_of_recommendation" accept=".pdf,.doc,.docx"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.letter_of_recommendation %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.letter_of_recommendation.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="ECA" class="block text-sm font-medium text-gray-700">ECA (Educational Credential Assessment)</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="ECA" id="ECA" accept=".pdf,.jpg,.jpeg,.png"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.ECA %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.ECA.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="other_documents" class="block text-sm font-medium text-gray-700">Other Documents</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="other_documents" id="other_documents" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        {% if user_documents.other_documents %}
+                            <p class="mt-2 text-sm text-gray-500">Current file: {{ user_documents.other_documents.name }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Save Documents
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

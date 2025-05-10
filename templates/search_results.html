@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen">
+    <!-- Search Header with Background -->
+    <div class="bg-blue-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">Search Results</h1>
+            {% if show_all %}
+            <p class="text-xl opacity-90">Showing all universities and programs</p>
+            {% elif has_search_query %}
+            <p class="text-xl opacity-90">Found results for "{{ search_query }}"</p>
+            {% elif has_filters %}
+            <p class="text-xl opacity-90">Filtered results</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Search Filters -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8 sticky top-4 z-10">
+            <form method="get" action="{% url 'unified_search' %}" class="space-y-4" id="searchForm">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                        <div class="relative">
+                            <input type="text" name="search" value="{{ search_query }}" 
+                                placeholder="Search universities or programs..." 
+                                class="w-full px-4 py-2 pl-10 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            {% if search_query %}
+                            <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="clearSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                        <div class="relative">
+                            <select name="country" class="w-full px-4 py-2 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 appearance-none" onchange="this.form.submit()">
+                                <option value="">All Countries</option>
+                                {% for country in countries %}
+                                <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                        <div class="relative">
+                            <select name="type" class="w-full px-4 py-2 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 appearance-none" onchange="this.form.submit()">
+                                <option value="">All Types</option>
+                                {% for type in university_types %}
+                                <option value="{{ type.type_name }}" {% if type.type_name == selected_type %}selected{% endif %}>{{ type.type_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <div class="flex items-center space-x-4">
+                        <label class="text-sm font-medium text-gray-700">Sort by:</label>
+                        <div class="relative">
+                            <select name="sort" class="px-4 py-2 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 appearance-none pr-8" onchange="this.form.submit()">
+                                <option value="ranking" {% if sort_by == 'ranking' %}selected{% endif %}>Ranking</option>
+                                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+                                <option value="country" {% if sort_by == 'country' %}selected{% endif %}>Country</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-2 top-3 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        {% if search_query or selected_country or selected_type %}
+                        <button type="button" onclick="clearFilters()" class="bg-gray-100 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors flex items-center">
+                            <i class="fas fa-times mr-2"></i>
+                            Clear Filters
+                        </button>
+                        {% endif %}
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center">
+                            <i class="fas fa-search mr-2"></i>
+                            Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="flex justify-center items-center mb-6">
+            <div class="flex space-x-4">
+                <button onclick="toggleSection('universities')" class="bg-white px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group {% if universities %}active{% endif %}" id="universitiesBtn">
+                    <span class="text-gray-600 text-lg">Universities:</span>
+                    <span class="font-semibold text-blue-600 ml-2 text-lg group-hover:text-blue-700">{{ universities|length }}</span>
+                    <i class="fas fa-chevron-down ml-2 text-gray-400 transform transition-transform duration-200" id="universitiesIcon"></i>
+                </button>
+                <button onclick="toggleSection('programs')" class="bg-white px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group {% if programs %}active{% endif %}" id="programsBtn">
+                    <span class="text-gray-600 text-lg">Programs:</span>
+                    <span class="font-semibold text-green-600 ml-2 text-lg group-hover:text-green-700">{{ programs|length }}</span>
+                    <i class="fas fa-chevron-down ml-2 text-gray-400 transform transition-transform duration-200" id="programsIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Universities Section -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Universities</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for university in universities %}
+                <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow transform hover:-translate-y-1 duration-200 border border-gray-100">
+                    <div class="relative">
+                        {% if university.image_url %}
+                        <img src="{{ university.image_url }}" alt="{{ university.name }}" class="w-full h-48 object-cover">
+                        {% else %}
+                        <div class="w-full h-48 bg-blue-50 flex items-center justify-center">
+                            <i class="fas fa-university text-4xl text-blue-300"></i>
+                        </div>
+                        {% endif %}
+                        {% if university.world_university_ranking %}
+                        <div class="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                            #{{ university.world_university_ranking }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2 text-gray-900">{{ university.name }}</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-2">{{ university.two_line_info|truncatewords:20 }}</p>
+                        <div class="space-y-2 mb-4">
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-map-marker-alt w-5 text-blue-500"></i>
+                                {{ university.country }}
+                            </p>
+                            {% if university.type_name %}
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-building w-5 text-blue-500"></i>
+                                {{ university.type_name }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'university_detail' university.id %}" 
+                           class="inline-block w-full text-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-8">
+                    <p class="text-gray-600">No universities found matching your criteria.</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% if universities.paginator.num_pages > 1 %}
+                <div class="mt-6">
+                    <nav class="flex justify-center">
+                        <ul class="flex space-x-2">
+                            {% if universities.has_previous %}
+                                <li>
+                                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_country %}country={{ selected_country }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}uni_page={{ universities.previous_page_number }}{% if programs.number > 1 %}&prog_page={{ programs.number }}{% endif %}" 
+                                       class="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for i in universities.paginator.page_range %}
+                                {% if i == universities.number %}
+                                    <li>
+                                        <span class="px-3 py-2 rounded-md bg-blue-600 text-white">{{ i }}</span>
+                                    </li>
+                                {% elif i <= 3 or i >= universities.paginator.num_pages|add:"-2" or i|add:"-2" <= universities.number and i|add:"2" >= universities.number %}
+                                    <li>
+                                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_country %}country={{ selected_country }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}uni_page={{ i }}{% if programs.number > 1 %}&prog_page={{ programs.number }}{% endif %}" 
+                                           class="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                            {{ i }}
+                                        </a>
+                                    </li>
+                                {% elif i == 4 and universities.number > 4 or i == universities.paginator.num_pages|add:"-3" and universities.number < universities.paginator.num_pages|add:"-3" %}
+                                    <li>
+                                        <span class="px-3 py-2 text-gray-500">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if universities.has_next %}
+                                <li>
+                                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_country %}country={{ selected_country }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}uni_page={{ universities.next_page_number }}{% if programs.number > 1 %}&prog_page={{ programs.number }}{% endif %}" 
+                                       class="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Programs Section -->
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Programs</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for program in programs %}
+                <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow transform hover:-translate-y-1 duration-200 border border-gray-100">
+                    <div class="relative">
+                        {% if program.image_url %}
+                        <img src="{{ program.image_url }}" alt="{{ program.name }}" class="w-full h-48 object-cover">
+                        {% else %}
+                        <div class="w-full h-48 bg-green-50 flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-4xl text-green-300"></i>
+                        </div>
+                        {% endif %}
+                        {% if program.tuition %}
+                        <div class="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                            ${{ program.tuition }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2 text-gray-900">{{ program.name }}</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-2">{{ program.two_line_info|truncatewords:20 }}</p>
+                        <div class="space-y-2 mb-4">
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-university w-5 text-green-500"></i>
+                                {{ program.university_name }}
+                            </p>
+                            {% if program.type_name %}
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-graduation-cap w-5 text-green-500"></i>
+                                {{ program.type_name }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'program_detail' program.id %}" 
+                           class="inline-block w-full text-center bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-8">
+                    <p class="text-gray-600">No programs found matching your criteria.</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% if programs.paginator.num_pages > 1 %}
+                <div class="mt-6">
+                    <nav class="flex justify-center">
+                        <ul class="flex space-x-2">
+                            {% if programs.has_previous %}
+                                <li>
+                                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_country %}country={{ selected_country }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}{% if universities.number > 1 %}uni_page={{ universities.number }}&{% endif %}prog_page={{ programs.previous_page_number }}" 
+                                       class="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for i in programs.paginator.page_range %}
+                                {% if i == programs.number %}
+                                    <li>
+                                        <span class="px-3 py-2 rounded-md bg-blue-600 text-white">{{ i }}</span>
+                                    </li>
+                                {% elif i <= 3 or i >= programs.paginator.num_pages|add:"-2" or i|add:"-2" <= programs.number and i|add:"2" >= programs.number %}
+                                    <li>
+                                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_country %}country={{ selected_country }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}{% if universities.number > 1 %}uni_page={{ universities.number }}&{% endif %}prog_page={{ i }}" 
+                                           class="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                            {{ i }}
+                                        </a>
+                                    </li>
+                                {% elif i == 4 and programs.number > 4 or i == programs.paginator.num_pages|add:"-3" and programs.number < programs.paginator.num_pages|add:"-3" %}
+                                    <li>
+                                        <span class="px-3 py-2 text-gray-500">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if programs.has_next %}
+                                <li>
+                                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_country %}country={{ selected_country }}&{% endif %}{% if selected_type %}type={{ selected_type }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}{% if universities.number > 1 %}uni_page={{ universities.number }}&{% endif %}prog_page={{ programs.next_page_number }}" 
+                                       class="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sticky filter handling
+        const filterForm = document.querySelector('.sticky');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', function() {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > lastScroll) {
+                filterForm.style.transform = 'translateY(-100%)';
+            } else {
+                filterForm.style.transform = 'translateY(0)';
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Initialize section states from localStorage
+        const universitiesHidden = localStorage.getItem('universitiesHidden') === 'true';
+        const programsHidden = localStorage.getItem('programsHidden') === 'true';
+        
+        if (universitiesHidden) {
+            document.getElementById('universitiesSection').style.display = 'none';
+            document.getElementById('universitiesIcon').classList.add('rotate-180');
+            document.getElementById('universitiesBtn').classList.add('bg-gray-100');
+        }
+        
+        if (programsHidden) {
+            document.getElementById('programsSection').style.display = 'none';
+            document.getElementById('programsIcon').classList.add('rotate-180');
+            document.getElementById('programsBtn').classList.add('bg-gray-100');
+        }
+    });
+
+    function toggleSection(section) {
+        const sectionElement = document.getElementById(section + 'Section');
+        const iconElement = document.getElementById(section + 'Icon');
+        const btnElement = document.getElementById(section + 'Btn');
+        
+        if (sectionElement.style.display === 'none') {
+            sectionElement.style.display = 'block';
+            iconElement.classList.remove('rotate-180');
+            btnElement.classList.remove('bg-gray-100');
+            localStorage.setItem(section + 'Hidden', 'false');
+        } else {
+            sectionElement.style.display = 'none';
+            iconElement.classList.add('rotate-180');
+            btnElement.classList.add('bg-gray-100');
+            localStorage.setItem(section + 'Hidden', 'true');
+        }
+    }
+
+    function clearSearch() {
+        document.querySelector('input[name="search"]').value = '';
+        document.getElementById('searchForm').submit();
+    }
+
+    function clearFilters() {
+        document.querySelector('input[name="search"]').value = '';
+        document.querySelector('select[name="country"]').value = '';
+        document.querySelector('select[name="type"]').value = '';
+        document.querySelector('select[name="sort"]').value = 'ranking';
+        document.getElementById('searchForm').submit();
+    }
+
+    // Add animation classes
+    document.querySelectorAll('.hover\\:shadow-md').forEach(element => {
+        element.addEventListener('mouseenter', () => {
+            element.classList.add('shadow-md');
+            element.classList.add('scale-102');
+        });
+        element.addEventListener('mouseleave', () => {
+            element.classList.remove('shadow-md');
+            element.classList.remove('scale-102');
+        });
+    });
+</script>
+{% endblock %} 

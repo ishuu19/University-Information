@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                    Edit Profile Information
+                </h3>
+                <div class="mt-2 max-w-xl text-sm text-gray-500">
+                    <p>Update your personal information and preferences.</p>
+                </div>
+                <form method="POST" class="mt-5 space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700">
+                            Phone Number
+                        </label>
+                        <div class="mt-1">
+                            <input type="tel" name="phone" id="phone"
+                                value="{{ profile.phone|default:'' }}"
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                placeholder="+1 (555) 123-4567">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="country" class="block text-sm font-medium text-gray-700">
+                            Country
+                        </label>
+                        <div class="mt-1">
+                            <select id="country" name="country"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="">Select a country</option>
+                                <option value="US" {% if profile.country == 'US' %}selected{% endif %}>United States</option>
+                                <option value="UK" {% if profile.country == 'UK' %}selected{% endif %}>United Kingdom</option>
+                                <option value="CA" {% if profile.country == 'CA' %}selected{% endif %}>Canada</option>
+                                <option value="AU" {% if profile.country == 'AU' %}selected{% endif %}>Australia</option>
+                                <option value="NZ" {% if profile.country == 'NZ' %}selected{% endif %}>New Zealand</option>
+                                <!-- Add more countries as needed -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="education_level" class="block text-sm font-medium text-gray-700">
+                            Education Level
+                        </label>
+                        <div class="mt-1">
+                            <select id="education_level" name="education_level"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="">Select education level</option>
+                                <option value="high_school" {% if profile.education_level == 'high_school' %}selected{% endif %}>High School</option>
+                                <option value="bachelors" {% if profile.education_level == 'bachelors' %}selected{% endif %}>Bachelor's Degree</option>
+                                <option value="masters" {% if profile.education_level == 'masters' %}selected{% endif %}>Master's Degree</option>
+                                <option value="phd" {% if profile.education_level == 'phd' %}selected{% endif %}>PhD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <a href="{% url 'profile' %}"
+                            class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Cancel
+                        </a>
+                        <button type="submit"
+                            class="bg-blue-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

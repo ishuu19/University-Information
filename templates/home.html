@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block title %}GlobeAlly - Your Gateway to Global Education{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-blue-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-20">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">Study Abroad Made Easy</h1>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Discover your perfect study destination and find the right university - all in one place.</p>
+            
+            <!-- Search and Filter Section -->
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
+                <form method="get" action="{% url 'unified_search' %}" class="space-y-6">
+                    <!-- Main Search Bar -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" name="search" placeholder="Search universities or programs..." 
+                            class="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Filter Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Country Filter -->
+                        <div class="space-y-2">
+                            <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
+                            <select name="country" id="country" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900">
+                                <option value="">All Countries</option>
+                                {% for country in countries %}
+                                    <option value="{{ country }}">{{ country }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Type Filter -->
+                        <div class="space-y-2">
+                            <label for="type" class="block text-sm font-medium text-gray-700">University Type</label>
+                            <select name="type" id="type" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900">
+                                <option value="">All Types</option>
+                                {% for type in university_types %}
+                                    <option value="{{ type }}">{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Sort Filter -->
+                        <div class="space-y-2">
+                            <label for="sort" class="block text-sm font-medium text-gray-700">Sort by</label>
+                            <select name="sort" id="sort" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900">
+                                <option value="ranking">Sort by Ranking</option>
+                                <option value="name">Sort by Name</option>
+                                <option value="country">Sort by Country</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="flex justify-center">
+                        <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span>Search</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="mt-8 space-x-4">
+                <a href="{% url 'university_list' %}" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-md font-semibold hover:bg-white hover:text-blue-600 transition-colors">Find Universities</a>
+                <a href="{% url 'program_list' %}" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-md font-semibold hover:bg-white hover:text-blue-600 transition-colors">Search Programs</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Cards -->
+<div class="max-w-7xl mx-auto px-4 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- University Search Card -->
+        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div class="text-blue-600 text-4xl mb-4">
+                <i class="fas fa-university"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">University Search</h3>
+            <p class="text-gray-600">Find and compare universities worldwide based on your preferences, rankings, and programs offered.</p>
+        </div>
+
+        <!-- Program Finder Card -->
+        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div class="text-blue-600 text-4xl mb-4">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Program Finder</h3>
+            <p class="text-gray-600">Discover programs that match your academic interests and career goals across top universities.</p>
+        </div>
+
+        <!-- Application Tracking Card -->
+        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div class="text-blue-600 text-4xl mb-4">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Application Tracking</h3>
+            <p class="text-gray-600">Track your applications, manage deadlines, and get notifications about your application status.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Top Universities -->
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Top Universities</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for university in universities %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                {% if university.image_url %}
+                <img src="{{ university.image_url }}" alt="{{ university.name }}" class="w-full h-48 object-cover">
+                {% endif %}
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">{{ university.name }}</h3>
+                    <p class="text-gray-600 mb-4">{{ university.two_line_info|truncatewords:20 }}</p>
+                    <div class="text-sm text-gray-500 mb-4">
+                        <p><i class="fas fa-map-marker-alt"></i> {{ university.location }}, {{ university.country }}</p>
+                        {% if university.world_university_ranking %}
+                        <p><i class="fas fa-trophy"></i> World Ranking: #{{ university.world_university_ranking }}</p>
+                        {% endif %}
+                        {% if university.type_name %}
+                        <p><i class="fas fa-building"></i> {{ university.type_name }}</p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'university_detail' university.id %}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Learn More</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold">Our Impact in Numbers</h2>
+            <p class="text-gray-600 mt-4">Transforming global education through data-driven insights</p>
+        </div>
+        
+        <!-- Main Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <!-- Global Reach -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Global Reach</h3>
+                    <i class="fas fa-globe text-blue-500 text-2xl"></i>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-3xl font-bold text-blue-600">{{ impact_stats.total_universities }}</div>
+                        <div class="text-sm text-gray-600">Universities</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-blue-600">{{ impact_stats.total_countries }}</div>
+                        <div class="text-sm text-gray-600">Countries</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-blue-600">{{ impact_stats.total_languages }}</div>
+                        <div class="text-sm text-gray-600">Teaching Languages</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Diversity -->
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Academic Diversity</h3>
+                    <i class="fas fa-graduation-cap text-purple-500 text-2xl"></i>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-3xl font-bold text-purple-600">{{ impact_stats.total_programs }}</div>
+                        <div class="text-sm text-gray-600">Academic Programs</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-purple-600">{{ impact_stats.total_fields }}</div>
+                        <div class="text-sm text-gray-600">Fields of Study</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-purple-600">{{ impact_stats.total_degrees }}</div>
+                        <div class="text-sm text-gray-600">Degree Types</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Success -->
+            <div class="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Student Success</h3>
+                    <i class="fas fa-chart-line text-green-500 text-2xl"></i>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-3xl font-bold text-green-600">{{ impact_stats.total_students }}</div>
+                        <div class="text-sm text-gray-600">Total Students</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-green-600">{{ impact_stats.avg_acceptance_rate }}</div>
+                        <div class="text-sm text-gray-600">Average Acceptance Rate per University</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-green-600">{{ impact_stats.total_applicants }}</div>
+                        <div class="text-sm text-gray-600">Active Applicants</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Financial Support -->
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Financial Support</h3>
+                    <i class="fas fa-hand-holding-usd text-yellow-500 text-2xl"></i>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <div class="text-2xl font-bold text-yellow-600">{{ impact_stats.total_scholarships }}</div>
+                        <div class="text-sm text-gray-600">Available Scholarships</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-yellow-600">${{ impact_stats.max_scholarship_amount }}</div>
+                        <div class="text-sm text-gray-600">Highest Scholarship</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Engagement -->
+            <div class="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Community Engagement</h3>
+                    <i class="fas fa-users text-red-500 text-2xl"></i>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <div class="text-2xl font-bold text-red-600">{{ impact_stats.total_reviews }}</div>
+                        <div class="text-sm text-gray-600">Student Reviews</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-red-600">{{ impact_stats.avg_program_rating }}/5.0</div>
+                        <div class="text-sm text-gray-600">Average Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any JavaScript needed for the home page
+</script>
+{% endblock %} 

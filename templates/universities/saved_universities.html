@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Saved Universities - GlobeAlly{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-900">Saved Universities</h1>
+            </div>
+            
+            {% if saved_universities %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                    {% for university in saved_universities %}
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+                            {% if university.image_url %}
+                                <img src="{{ university.image_url }}" alt="{{ university.name }}" class="w-full h-48 object-cover">
+                            {% endif %}
+                            <div class="p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h2 class="text-lg font-semibold text-gray-900">{{ university.name }}</h2>
+                                    <a href="{% url 'save_university' university.id %}" class="text-red-600 hover:text-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                                <p class="text-sm text-gray-500 mb-2">{{ university.location }}</p>
+                                <div class="flex items-center text-sm text-gray-500 mb-4">
+                                    <span class="mr-4">Rank: #{{ university.world_university_ranking }}</span>
+                                    <span>Type: {{ university.type.name }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <a href="{% url 'university_detail' university.id %}" class="text-blue-600 hover:text-blue-500">
+                                        View Details →
+                                    </a>
+                                    {% if university.programs.exists %}
+                                        <span class="text-sm text-gray-500">
+                                            {{ university.programs.count }} Programs
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-6 text-center">
+                    <p class="text-gray-500">You haven't saved any universities yet.</p>
+                    <a href="{% url 'university_list' %}" class="mt-4 inline-block text-blue-600 hover:text-blue-500">
+                        Browse Universities →
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

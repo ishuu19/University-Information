@@ -1,0 +1,48 @@
+{% if page_obj.has_other_pages %}
+<div class="mt-8">
+    <div class="flex justify-center mb-4">
+        <div class="text-sm text-gray-700">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+        </div>
+    </div>
+    
+    <div class="flex justify-center">
+        <nav class="inline-flex rounded-md shadow">
+            {% if page_obj.has_previous %}
+                <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode|cut:'page=' }}{% endif %}&page=1" 
+                   class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    First
+                </a>
+                <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode|cut:'page=' }}{% endif %}&page={{ page_obj.previous_page_number }}" 
+                   class="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Previous
+                </a>
+            {% endif %}
+
+            {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                    <span class="px-3 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                        {{ i }}
+                    </span>
+                {% elif i > page_obj.number|add:'-5' and i < page_obj.number|add:'5' %}
+                    <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode|cut:'page=' }}{% endif %}&page={{ i }}" 
+                       class="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        {{ i }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode|cut:'page=' }}{% endif %}&page={{ page_obj.next_page_number }}" 
+                   class="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Next
+                </a>
+                <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode|cut:'page=' }}{% endif %}&page={{ page_obj.paginator.num_pages }}" 
+                   class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Last
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+</div>
+{% endif %} 
